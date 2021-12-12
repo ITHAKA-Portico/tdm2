@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<log4j:configuration xmlns:log4j="http://portico.org/log4j/">
+
+<appenders> 
+  <Console name="console" target="SYSTEM_OUT">
+  	<PatternLayout pattern="%d %-5p [%t] %C{2} (%F:%L) - %m%n"/>   <!-- %C, %F, %L cause slowness, void in production execution -->
+  	<Filters>
+        <ThresholdFilter level="warn" onMatch="DENY" onMismatch="ACCEPT" />
+    </Filters>
+  </Console>
+  <Console name="console-no-warn" target="SYSTEM_OUT">
+  	<PatternLayout pattern="%d %-5p [%t] %C{2} (%F:%L) - %m%n"/>   <!-- %C, %F, %L cause slowness, void in production execution -->
+  	<Filters>
+        <ThresholdFilter level="warn" onMatch="DENY" onMismatch="ACCEPT" />
+    </Filters>
+  </Console>
+  <Console name="console-no-warn" target="SYSTEM_ERR">
+  	<PatternLayout pattern="%d %-5p [%t] %C{2} (%F:%L) - %m%n"/>   <!-- %C, %F, %L cause slowness, void in production execution -->
+  	<Filters>
+        <ThresholdFilter level="warn" onMatch="DENY" onMismatch="ACCEPT" />
+    </Filters>
+  </Console>
+  <File name="logfile" fileName="logs/TDM.log">
+  	<PatternLayout pattern="%d %p %C{1} [%t] %m%n"/>
+  	<Filters>
+        <ThresholdFilter level="warn" onMatch="DENY" onMismatch="ACCEPT" />
+    </Filters>
+   </File>
+   <File name="awslogfile" fileName="logs/AWS.log">
+  	<PatternLayout pattern="%d %p %C{1} [%t] %m%n"/>
+   </File>
+   <File name="dwlogfile" fileName="logs/datawarehouse.log">
+  	 <PatternLayout pattern="%d %p %C{1} [%t] %m%n"/>
+  	
+   </File>
+   <File name="samplelogfile" fileName="logs/sample.log">
+  	<PatternLayout pattern="%d %p %C{1} [%t] %m%n"/>
+   </File>
+   <File name="booklogfile" fileName="logs/TDM_book.log">
+  	<PatternLayout pattern="%d %p %C{1} [%t] %m%n"/>
+   </File>
+   <File name="poslogfile" fileName="logs/TDM_POS.log">
+  	<PatternLayout pattern="%d %p %C{1} [%t] %m%n"/>
+   </File>
+   <RollingFile name="AWSRollingFileAppender" fileName="logs/aws.log"
+      filePattern="logs/aws-%d{MM-dd-yyyy}-%i.log">
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+   </RollingFile>
+   <RollingFile name="AWSRollingErrorAppender" fileName="logs/aws-error.log"
+      filePattern="logs/aws-error-%d{MM-dd-yyyy}-%i.log">
+      	<LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c (%F:%L) - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+    </RollingFile>
+    
+    <RollingFile name="ExportAURollingFileAppender" fileName="logs/exportAU.log"
+      filePattern="logs/exportAU-%d{MM-dd-yyyy}-%i.log">
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="70 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+   </RollingFile>
+   <RollingFile name="ExportAURollingErrorAppender" fileName="logs/exportAU-error.log"
+      filePattern="logs/exportAU-error-%d{MM-dd-yyyy}-%i.log">
+      	<LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c (%F:%L) - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="70 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+    </RollingFile>
+    
+    
+    <RollingFile name="TDMRollingFileAppender" fileName="logs/tdm.log"
+      filePattern="logs/tdm-%d{MM-dd-yyyy}-%i.log">
+        <PatternLayout>
+         <!--    <Pattern>%d [%t] %p %c - %m%n</Pattern>--> 
+            <Pattern>%d %-5p [%t] %C{2} (%F:%L) - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+   </RollingFile>
+   <RollingFile name="TDMRollingErrorAppender" fileName="logs/tdm-error.log"
+      filePattern="logs/tdm-error-%d{MM-dd-yyyy}-%i.log">
+      	<LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+             <!--    <Pattern>%d [%t] %p %c - %m%n</Pattern>--> 
+            <Pattern>%d %-5p [%t] %C{2} (%F:%L) - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+    </RollingFile>
+    <RollingFile name="CAPRollingFileAppender" fileName="logs/cap.log"
+      filePattern="logs/cap-%d{MM-dd-yyyy}-%i.log">
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+   </RollingFile>
+    <RollingFile name="CAPRollingErrorAppender" fileName="logs/cap-error.log"
+      filePattern="logs/cap-error-%d{MM-dd-yyyy}-%i.log">
+      	<LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c (%F:%L) - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+    </RollingFile>
+    <RollingFile name="CacheAURollingFileAppender" fileName="logs/cacheAU.log"
+      filePattern="logs/cacheAU-%d{MM-dd-yyyy}-%i.log">
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+   </RollingFile>
+    <RollingFile name="CacheAURollingErrorAppender" fileName="logs/cacheAU-error.log"
+      filePattern="logs/cacheAU-error-%d{MM-dd-yyyy}-%i.log">
+      	<LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>%d [%t] %p %c (%F:%L) - %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <OnStartupTriggeringPolicy />
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy size="50 MB" />
+        </Policies>
+        <DefaultRolloverStrategy max="20" />
+    </RollingFile>
+</appenders> 
+  	
+<loggers>
+	<logger name="com.mchange.v2.log.MLog" level="error" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	
+	<!--  pdfbox -->
+	<logger name="org.apache.pdfbox.pdmodel.font.PDFont" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.pdmodel" level="fatal" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.fontbox.util.autodetect.FontFileFinder" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.pdmodel.font.PDSimpleFont" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.pdmodel.font.PDTrueTypeFont" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.pdmodel.font.PDType0Font" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.pdmodel.font.PDType1Font" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.pdmodel.font" level="off" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	<logger name="org.apache.pdfbox.cos.COSDocument" level="fatal" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="error"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="error"/>
+	</logger>
+	
+
+	
+	<!--  datawarehouse -->
+	<logger name="org.portico.tdm.tdm2.datawarehouse.DWArticle" level="trace" additivity="false">
+		<appender-ref ref="dwlogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.datawarehouse.DWJournal" level="trace" additivity="false">
+		<appender-ref ref="dwlogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.datawarehouse.DWVolume" level="trace" additivity="false">
+		<appender-ref ref="dwlogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.datawarehouse.DWPage" level="trace" additivity="false">
+		<appender-ref ref="dwlogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.datawarehouse.DWIssue" level="trace" additivity="false">
+		<appender-ref ref="dwlogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+
+	<logger name="com.optimaize.langdetect.LanguageDetectorImpl" level="warn" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	
+	<!-- tools -->
+<!--  	<logger name="org.portico.tdm.tools.JsonLDGenerator" level="info" additivity="false">
+		<appender-ref ref="logfile" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="error"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.PrepareUpload" level="info" additivity="false">
+		<appender-ref ref="logfile" level="info"/>
+		<appender-ref ref="console" level="error"/>
+	</logger>
+	
+-->
+	
+<!--  	<logger name="org.portico.tdm.tools.AWSOps" level="info" additivity="false">
+		<appender-ref ref="AWSRollingFileAppender" level="info"/>
+		<appender-ref ref="AWSRollingErrorAppender" />  -->
+	<!--  	<appender-ref ref="console" level="info"/>  -->
+<!--  	</logger>-->
+	
+		
+	<logger name="org.portico.tdm.tdm2.tools.SampleChroniclingAmerica" level="trace" additivity="false">
+		<appender-ref ref="samplelogfile" level="debug"/>
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.tdm2.SamplePorticoAU" level="trace" additivity="false">
+		<appender-ref ref="samplelogfile" level="debug"/>
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.tdm2.CachePorticoAU" level="info" additivity="false">
+		<appender-ref ref="CacheAURollingFileAppender" level="info"/>
+		<appender-ref ref="CacheAURollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+<!--  	<logger name="org.portico.tdm.tools.JstorSolrIndexGenerator" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.IssueSolrJSON" level="error" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="console" level="error"/>
+	</logger>
+	-->
+	<logger name="org.portico.tdm.tdm2.tools.SimpleXML2Text" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="console" level="trace"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tools.TDMUtil" level="error" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="error"/>
+	</logger>
+<!--  <logger name="org.portico.tdm.tools.HaithiEFGenerator" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.ArticleFeature" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.ArticleJSON" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tools.IssueJSON" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+-->		
+	<!-- jsonld -->
+<!--  	<logger name="org.portico.tdm.jsonld.IssueJSONLD" level="debug" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.jsonld.BookJSONLD" level="debug" additivity="false">
+		<appender-ref ref="booklogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.jsonld.PartJSONLD" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+-->	
+	<!-- schemaorg -->
+<!--  	<logger name="org.portico.tdm.schemaorg.Article" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>-->
+	<logger name="org.portico.tdm.tdm2.schemaorg.Publisher" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.schemaorg.Person" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.schemaorg.Organization" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.schemaorg.Identifier" level="trace" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+<!--  	<logger name="org.portico.tdm.schemaorg.Book" level="trace" additivity="false">
+		<appender-ref ref="booklogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.schemaorg.Chapter" level="trace" additivity="false">
+		<appender-ref ref="booklogfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.schemaorg.PublicationIssue" level="debug" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.schemaorg.PublicationVolume" level="debug" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>
+	<logger name="org.portico.tdm.schemaorg.Periodical" level="debug" additivity="false">
+		<appender-ref ref="logfile" level="debug"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console" level="debug"/>
+	</logger>-->
+	<logger name="org.portico.tdm.tdm2.tools.JsonPOS2DB" level="trace" additivity="false">
+		<appender-ref ref="poslogfile" level="debug"/>
+		<appender-ref ref="console" level="trace"/>
+	</logger>
+	
+	
+	<!-- tdmv2 -->
+	<logger name="org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.PorticoV2Processor" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2Article" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2Book" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2Chapter" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2AWSLoader" level="info" additivity="false">
+		<appender-ref ref="awslogfile" level="info"/>
+		<appender-ref ref="AWSRollingErrorAppender" />
+	<!--  	<appender-ref ref="console" level="error"/>-->
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.ChroniclingAmericaProcessor" level="info" additivity="false">
+		<appender-ref ref="CAPRollingFileAppender" level="info"/>
+		<appender-ref ref="CAPRollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2Newspaper" level="info" additivity="false">
+		<appender-ref ref="CAPRollingFileAppender" level="info"/>
+		<appender-ref ref="CAPRollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2NewspaperIssue" level="info" additivity="false">
+		<appender-ref ref="CAPRollingFileAppender" level="info"/>
+		<appender-ref ref="CAPRollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2DocSouthProcessor" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	<logger name="org.portico.tdm.tdm2.tdmv2.V2DocSouthDocument" level="info" additivity="false">
+		<appender-ref ref="TDMRollingFileAppender" level="info"/>
+		<appender-ref ref="TDMRollingErrorAppender" />
+		<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+	
+	
+	<logger name="org.portico.tdm.util.ExportAu" level="info" additivity="false">
+		<appender-ref ref="ExportAURollingFileAppender" level="info"/>
+		<appender-ref ref="ExportAURollingErrorAppender" />
+	  	<appender-ref ref="console-no-warn" level="info"/>
+	</logger>
+
+<!--  
+	<root level="warn">
+	  <appender-ref ref="logfile"/>
+	  <appender-ref ref="console-no-warn"/>
+	</root>
+-->	
+
+</loggers>
+
+</log4j:configuration>

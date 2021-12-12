@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.portico.tdm</groupId>
+  <artifactId>tdm2</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>tdm2</name>
+  
+  <!-- FIXME change it to the project's website -->
+  <!--<url>http://www.example.com</url>-->
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    	<java.version>11</java.version>
+    	<maven.compiler.target>11</maven.compiler.target>
+    	<maven.compiler.source>11</maven.compiler.source>
+    	<poi.version>3.17</poi.version>
+  </properties>
+
+  <dependencies>
+  
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+       <groupId>c3p0</groupId>
+       <artifactId>c3p0</artifactId>
+       <version>0.9.1.2</version>
+    </dependency>
+    
+   	<dependency> 
+   		<groupId>org.apache.opennlp</groupId> 
+   		<artifactId>opennlp-tools</artifactId> 
+   		<version>1.9.3</version> 
+   	</dependency>    
+    
+	<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
+	<dependency>
+	    <groupId>javax.json</groupId>
+	    <artifactId>javax.json-api</artifactId>
+	    <version>1.1.4</version>
+	</dependency>
+    
+    <dependency>
+    	<groupId>org.apache.logging.log4j</groupId>
+    	<artifactId>log4j-api</artifactId>
+    	<version>2.15.0</version>
+  	</dependency>
+  	<dependency>
+    	<groupId>org.apache.logging.log4j</groupId>
+    	<artifactId>log4j-core</artifactId>
+    	<version>2.10.0</version>
+  	</dependency>
+  	<dependency>
+    	<groupId>commons-lang</groupId>
+    	<artifactId>commons-lang</artifactId>
+    	<version>2.6</version>
+	</dependency>  
+	
+	<dependency>
+    	<groupId>commons-io</groupId>
+    	<artifactId>commons-io</artifactId>
+    	<version>2.11.0</version>
+	</dependency>  
+   
+    <dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi</artifactId>
+		<version>${poi.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi-ooxml</artifactId>
+		<version>${poi.version}</version>
+	</dependency>
+  	
+  	<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
+	<dependency>
+    	<groupId>commons-cli</groupId>
+    	<artifactId>commons-cli</artifactId>
+    	<version>1.4</version>
+	</dependency> 
+    
+	<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+	<dependency>
+	    <groupId>org.apache.pdfbox</groupId>
+	    <artifactId>pdfbox</artifactId>
+	    <version>2.0.24</version>
+	</dependency>
+
+	
+	<dependency> 
+         <groupId>org.apache.pdfbox</groupId> 
+         <artifactId>fontbox</artifactId> 
+         <version>2.0.24</version> 
+    </dependency>
+    
+    
+	<dependency>
+	    <groupId>com.oracle.database.jdbc</groupId>
+	    <artifactId>ojdbc8</artifactId>
+	    <version>21.1.0.0</version>
+	</dependency>
+
+
+ <!--       
+    <dependency>
+	   <groupId>com.fasterxml.jackson.core</groupId>
+	   <artifactId>jackson-core</artifactId>
+	   <version>2.9.9</version>
+	 </dependency>
+	-->
+	 <!-- Just the annotations; use this dependency if you want to attach annotations
+	      to classes without connecting them to the code. -->
+	       <!--  
+	 <dependency>
+	   <groupId>com.fasterxml.jackson.core</groupId>
+	   <artifactId>jackson-annotations</artifactId>
+	   <version>2.9.0</version>
+	</dependency>      
+  -->    
+    <!-- databinding; ObjectMapper, JsonNode and related classes are here -->
+<!-- 	<dependency>
+	  <groupId>com.fasterxml.jackson.core</groupId>
+	  <artifactId>jackson-databind</artifactId>
+	  <version>2.9.9.1</version>
+	</dependency>
+ -->	
+	<dependency>
+    	<groupId>com.optimaize.languagedetector</groupId>
+    	<artifactId>language-detector</artifactId>
+    	<version>0.6</version>
+	</dependency>
+	<dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-ext</artifactId>
+    	<version>1.7.25</version>
+	</dependency>
+	<dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-api</artifactId>
+    	<version>1.7.25</version>
+	</dependency>
+	<dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.25</version>
+    </dependency>
+    <!-- No logging.  When the SLF4J classloader sees this (it looks to see what loggers are in the classpath that it can use), it should stop logging  -->
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-nop</artifactId>
+    	<version>1.7.25</version>
+    	<scope>test</scope>
+	</dependency>     
+      
+    <dependency>
+        <groupId>com.googlecode.json-simple</groupId>
+        <artifactId>json-simple</artifactId>
+        <version>1.1</version>
+    </dependency>  
+    
+    <!--  following are for AWS SDK 2 -->
+	<dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>2.10.24</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>software.amazon.awssdk</groupId>
+    	<artifactId>auth</artifactId>
+    	<version>2.10.24</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>software.amazon.awssdk</groupId>
+    	<artifactId>apache-client</artifactId>
+    	<version>2.10.24</version>
+    </dependency>
+    
+    
+    <dependency>
+    	<groupId>software.amazon.awssdk</groupId>
+    	<artifactId>aws-core</artifactId>
+    	<version>2.10.24</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>software.amazon.awssdk</groupId>
+    	<artifactId>profiles</artifactId>
+    	<version>2.10.24</version>
+    </dependency> 
+    
+    <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/netty-nio-client -->
+	<dependency>
+	    <groupId>software.amazon.awssdk</groupId>
+	    <artifactId>netty-nio-client</artifactId>
+	    <version>2.10.24</version>
+	</dependency>
+    <!-- End of AWS SDK2 --> 
+
+    <!--  Standford CoreNLP --> 
+    <!--  https://search.maven.org/artifact/edu.stanford.nlp/stanford-corenlp/4.2.2/jar  -->
+	<dependency>
+    	<groupId>edu.stanford.nlp</groupId>
+    	<artifactId>stanford-corenlp</artifactId>
+    	<version>4.2.2</version>
+    	
+    	<exclusions>
+          <exclusion>
+             <groupId>xom</groupId>
+             <artifactId>xom</artifactId>
+          </exclusion>
+        </exclusions>
+        
+	</dependency>
+
+    <!--  JSON schema validator -->
+	<!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
+	<dependency>
+		<groupId>com.github.fge</groupId>
+		<artifactId>json-schema-validator</artifactId>
+		<version>2.2.6</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/com.github.fge/jackson-coreutils -->
+	<dependency>
+		<groupId>com.github.fge</groupId>
+		<artifactId>jackson-coreutils</artifactId>
+		<version>1.8</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-core -->
+	<dependency>
+		<groupId>com.github.fge</groupId>
+		<artifactId>json-schema-core</artifactId>
+		<version>1.2.5</version>
+	</dependency>
+    <!-- End of JSON schema validator -->
+ 
+    <!-- Portico's archive client -->
+	<dependency>
+	  <groupId>org.ithaka.portico</groupId>
+	  <artifactId>archive-client-prod</artifactId>
+	  <version>2.1.0-SNAPSHOT</version>
+	</dependency>
+	
+	<!--  needed for ExportAUsFromArchiveExploded -->
+	<dependency>
+	  <groupId>org.ithaka.portico</groupId>
+	  <artifactId>message-objects-prod</artifactId>
+	  <version>2.1.0-SNAPSHOT</version>
+	</dependency>
+	
+	<!--  local jar file -->
+    <dependency>
+    	<groupId>org.portico.conprep</groupId>
+    	<artifactId>ExportAUsFromArchiveExploded</artifactId>
+    	<version>1.0</version>
+	</dependency>
+
+    
+  </dependencies>
+  
+  <repositories>
+     <repository>
+		<id>portico-nexus</id>
+		<url>http://pr2ptgpprd03.ithaka.org:8082/nexus/content/groups/public</url>
+		<releases>
+			<enabled>true</enabled>
+		</releases>
+		<snapshots>
+			<enabled>true</enabled>
+			<updatePolicy>always</updatePolicy>
+		</snapshots>
+	 </repository>
+	 
+	 <repository>
+        <id>locallib</id>
+        <url>file://${project.basedir}/lib</url>
+    </repository>
+	
+   </repositories>
+  
+  
+  
+  
+
+  <build>
+    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+      <plugins>
+        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.5.2</version>
+          
+          <!-- to install local jar -->
+   <!--         <configuration>
+		      <groupId>org.portico.conprep.util.archiveexport</groupId>
+		      <artifactId>ExportAuBagsExploded</artifactId>
+		      <version>1.0</version>
+		      <packaging>jar</packaging>
+		      <file>${project.basedir}/lib/ExportAUsFromArchiveExploded-1.0.jar</file>
+		      <generatePom>true</generatePom>
+		   </configuration>
+		   <executions>
+		      <execution>
+		         <id>install-jar-lib</id>
+		         <goals>
+		            <goal>install-file</goal>
+		         </goals>
+		         <phase>validate</phase>
+		      </execution>
+   		  </executions>  -->
+		 <!--  end of install local jar -->		   
+		   
+		   
+        </plugin>
+        
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+        </plugin>
+        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        
+        <!-- create jar with dependencies -->
+	    <plugin>
+	      <artifactId>maven-assembly-plugin</artifactId>
+	      <configuration>
+	        <archive>
+	          <manifest>
+	            <mainClass>fully.qualified.MainClass</mainClass>
+	          </manifest>
+	        </archive>
+	        <descriptorRefs>
+	          <descriptorRef>jar-with-dependencies</descriptorRef>
+	        </descriptorRefs>
+	      </configuration>
+	    </plugin>
+        
+        
+        
+        
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+        	<groupId>org.eclipse.m2e</groupId>
+        	<artifactId>lifecycle-mapping</artifactId>
+        	<version>1.0.0</version>
+        	<configuration>
+        		<lifecycleMappingMetadata>
+        			<pluginExecutions>
+        				<pluginExecution>
+        					<pluginExecutionFilter>
+        						<groupId>
+        							org.apache.maven.plugins
+        						</groupId>
+        						<artifactId>
+        							maven-install-plugin
+        						</artifactId>
+        						<versionRange>[2.5.2,)</versionRange>
+        						<goals>
+        							<goal>install-file</goal>
+        						</goals>
+        					</pluginExecutionFilter>
+        					<action>
+        						<ignore></ignore>
+        					</action>
+        				</pluginExecution>
+        			</pluginExecutions>
+        		</lifecycleMappingMetadata>
+        	</configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
