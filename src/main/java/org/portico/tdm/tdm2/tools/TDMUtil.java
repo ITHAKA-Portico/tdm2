@@ -4790,6 +4790,72 @@ public class TDMUtil {
 	}
 
 
+	/**
+	 * Find a publisher's journal content beginning date, in format of "01/01/2000". Default is "01/01/1900".
+	 * @param publisher
+	 * @return
+	 * @throws Exception 
+	 */
+	public static String findPublisherJournalBeginningDate(String publisher_id) throws Exception {
+		String beginningDate = "01/01/1900";
+		
+		String query = "select min(jnl_start_year) pub_journal_start_year from dw_journal  where publisher_id='" + publisher_id + "'";
+		
+		try ( Connection conn = TDMUtil.getDWConnection_pooled("PROD");
+				Statement stmt = conn.createStatement();) {
+			
+			ResultSet rs = stmt.executeQuery(query);
+
+			while( rs.next() ) {
+
+				String pub_journal_start_year = rs.getString("pub_journal_start_year");
+				beginningDate = "01/01/" + pub_journal_start_year;
+			}
+			
+			rs.close();
+		}
+		catch(Exception e) {
+			logger.error( programName + ":findPublisherJournalBeginningDate :" + query + " " +  e.getMessage());
+			throw e;
+		}
+		
+		return beginningDate;
+	}
+
+
+	/**
+	 * Find a content set's start date, in format of "01/01/2000". Default is "01/01/1900".
+	 * @param cs
+	 * @return
+	 * @throws Exception 
+	 */
+	public static String findContentSetStartDate(String cs) throws Exception {
+		String beginningDate = "01/01/1900";
+		
+		String query = "select jnl_start_year from dw_journal  where issn_no='" + cs + "'";
+		
+		try ( Connection conn = TDMUtil.getDWConnection_pooled("PROD");
+				Statement stmt = conn.createStatement();) {
+			
+			ResultSet rs = stmt.executeQuery(query);
+
+			while( rs.next() ) {
+
+				String jnl_start_year = rs.getString("jnl_start_year");
+				beginningDate = "01/01/" + jnl_start_year;
+			}
+			
+			rs.close();
+		}
+		catch(Exception e) {
+			logger.error( programName + ":findContentSetStartDate :" + query + " " +  e.getMessage());
+			throw e;
+		}
+		
+		return beginningDate;
+	}
+
+
 	
 
 	

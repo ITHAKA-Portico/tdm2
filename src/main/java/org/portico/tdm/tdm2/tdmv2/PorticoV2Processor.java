@@ -64,6 +64,11 @@ import org.portico.tdm.tdm2.tools.TDMUtil;
  *  java org.portico.tdm.tdmv2.PorticoV2Processor -book  -publisher SAGE  -subdir sage -cs "SAGE RESEARCH METHODS"
  *  java org.portico.tdm.tdmv2.PorticoV2Processor -book  -publisher SAGE  -subdir sage -cs "SAGE KNOWLEDGE"
  *  java org.portico.tdm.tdmv2.PorticoV2Processor -subdir sage -publisher SAGE -scandir  (process what is under sage/ directory)  
+ *  
+ *  2/15/2022 on server:
+ *  $HOME/java/jdk-16.0.2/bin/java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tdmv2.PorticoV2Processor -book  -publisher PRINCETON  -subdir newcontent_202202/princeton  -aufile princeton_ebook_error 
+ *   (These AUs' bits xml files don't have FU pdf filenames, instead are local pdf file names. Sushil should investigate ).
+ *  
  *  nohup java org.portico.tdm.tdmv2.PorticoV2Processor -newcontent  -subdir newcontent_202104 > /dev/null 2>&1 &
  *  nohup java org.portico.tdm.tdmv2.PorticoV2Processor -subdir academicus -publisher ACADEMICUS > /dev/null 2>&1 &
  *  

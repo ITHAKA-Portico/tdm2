@@ -52,11 +52,19 @@ import org.portico.tdm.util.ExportAu;
  *  nohup $HOME/java/jdk-16.0.2/bin/java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -loadnew -since 03/01/2021 -to 09/01/2021 -publisher MICHIGAN > /dev/null  2>&1 &
  *  nohup $HOME/java/jdk-16.0.2/bin/java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -process -upload -since 03/01/2021 -to 09/01/2021 -publist pub_list > /dev/null  2>&1 &
  *  nohup $HOME/java/jdk-16.0.2/bin/java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -auto -book -since 03/01/2020 -to 10/01/2021 -publist pub_list > /dev/null  2>&1 &
+ *  nohup $HOME/java/jdk-16.0.2/bin/java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -loadnew -book -since 01/01/2014 -to 02/01/2022 -publisher PRINCETON  > /dev/null  2>&1 &
+ *  nohup java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -loadnew -since 01/01/2013 -to 03/01/2022 -publisher CJCMH  > /dev/null  2>&1 &
+ *  nohup java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -loadnew -since 01/01/2014 -to 04/01/2022 -publisher PARTICLE  > /dev/null  2>&1 &
+ *  nohup java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -process -upload -to 04/01/2022 -publisher PARTICLE  > /dev/null  2>&1 &
+ *  java  -cp target/tdm2-0.0.1-SNAPSHOT-jar-with-dependencies.jar:config/:$CLASSPATH  org.portico.tdm.tdm2.tools.TDMPorticoNewContentLoader -loadnew -since beginning -to 04/01/2022 -publist publist
  *  (On server: after tdm2 command) 
  *  tdmloader -loadnew -since 03/01/2021 -to 09/01/2021 -publisher LED 
+ *  tdmloader -auto -book -since 04/01/2022 -to 06/01/2022 -publist publist
+ *  tdmloader -auto -since beginning -to 06/01/2022 -publisher BARATARIA
  *
  * 
  * @author dxie
+ * @version 1.1	4/26/2022 Allow '-since beginning' parameter for cs , publisher, or publist
  *
  */
 public class TDMPorticoNewContentLoader {
@@ -90,7 +98,7 @@ public class TDMPorticoNewContentLoader {
 	String newContentFolder;				//newcontent_202110  or ebook/newcontent_202110
 	String publisher;
 	boolean bookFlag = false;
-
+	boolean sinceBeginningFlag = false;
 	String loadDateSince = null;			//in format of 03/01/2020. Default is last month first day
 	String loadDateTo = null;				//in format of 03/01/2020. Default is this month first day
 	
@@ -126,15 +134,15 @@ public class TDMPorticoNewContentLoader {
 		int this_year  = c.get(Calendar.YEAR);
 		
 		int last_month = this_month -1;
-		int year = this_year;
+		int last_year = this_year;
 		if( last_month == 0 ) {
 			last_month =12;
-			year = this_year-1;
+			last_year = this_year-1;
 		}
 		
 		//set default dates
-		loadDateSince = ( last_month < 10? "0" + last_month: "" + last_month ) + "/01/" + year;	//03/01/2020
-		loadDateTo = (this_month<10? "0" + this_month: "" + this_month ) + "/01/" + year;		//03/01/2021
+		loadDateSince = ( last_month < 10? "0" + last_month: "" + last_month ) + "/01/" + last_year;	//03/01/2020
+		loadDateTo = (this_month<10? "0" + this_month: "" + this_month ) + "/01/" + this_year;		//03/01/2021
 				
 		String contentdir = "newcontent_" + this_year + ( this_month<10? "0" + this_month: "" + this_month );		//default is for journals newcontent_202110
 		setNewContentFolder(contentdir);
@@ -171,6 +179,9 @@ public class TDMPorticoNewContentLoader {
 				String fromDate = line.getOptionValue("since");
 				if ( fromDate.matches("^(0[1-9]|1[0-2])\\/(0[1-9]|1[0-9]|2[0-9]|3[0-1])\\/20\\d{2}$")) {
 					processor.setLoadDateSince(fromDate);
+				}
+				else if ( fromDate.equalsIgnoreCase("beginning")) {
+					processor.setSinceBeginningFlag(true);
 				}
 				else {
 					//default is last month first day
@@ -441,7 +452,12 @@ public class TDMPorticoNewContentLoader {
 		}
 		catch(Exception e) {
 			logger.error( programName + ": uploadNewBooksForAPublisher Error uploading book content set jsonl files for " + publisher + " " + e.getMessage());
-			e.printStackTrace();
+			if ( e.getMessage().indexOf("java.nio.file.NoSuchFileException") != -1 ) {
+				logger.error( programName + ": uploadNewBooksForAPublisher Error uploading book content set jsonl files for " + publisher + " Empty content to upload");
+			}
+			else {
+				e.printStackTrace();
+			}
 		}
 
 		
@@ -1272,6 +1288,11 @@ public class TDMPorticoNewContentLoader {
 		//scan for book AUs
 		List<String> bookAUList = new ArrayList<>();
 		File[] directories = new File(newContentInputDir).listFiles(File::isDirectory);
+		
+		if ( directories.length == 0) {
+			logger.info(programName + ":processNewBooksForAPublisher " + publisher + " :No new content to process" );
+			return 0;
+		}
 		
 		for(File csdir: directories) {
 			String dirname = csdir.toString();													//input/ebook/newcontent_202110/muse/phw14hnk755
@@ -2194,8 +2215,20 @@ public class TDMPorticoNewContentLoader {
 		
 		
 		String loadToDate = getLoadDateTo();		//ie 03/02/2021
-		String loadFromDate = getLoadDateSince();
+		String loadFromDate = null;
 		
+		if ( isSinceBeginningFlag()) {
+			try {
+				loadFromDate = TDMUtil.findContentSetStartDate(cs);
+			}
+			catch(Exception e) {
+				logger.error(programName + ": loadNewContentForAContentSet :Error getting content set journal start date " +  e.getMessage());
+				loadFromDate = "01/01/1900";	//default date
+			}
+		}
+		else {
+			loadFromDate = getLoadDateSince();
+		}
 		
 		ExportAu exportor = new ExportAu();
 		exportor.setLoadDateSince(loadFromDate);
@@ -2233,7 +2266,20 @@ public class TDMPorticoNewContentLoader {
 		long start_time = System.currentTimeMillis();
 		
 		String loadToDate = getLoadDateTo();		//ie 03/02/2021
-		String loadFromDate = getLoadDateSince();
+		String loadFromDate = null;
+		
+		if ( isSinceBeginningFlag() ) {
+			try {
+				loadFromDate = TDMUtil.findPublisherJournalBeginningDate(publisher);
+			}
+			catch(Exception e) {
+				logger.error(programName + ": loadNewContentForAPublisher :Error getting publisher min journal start date " +  e.getMessage());
+				loadFromDate = "01/01/1900";	//default date
+			}
+		}
+		else {
+			loadFromDate = getLoadDateSince();
+		}
 		
 		String new_content_dir = getNewContentFolder();												//       newcontent_202109
 		
@@ -2451,6 +2497,14 @@ public class TDMPorticoNewContentLoader {
 
 	public void setUploadedJsonlineFileList(List<String> uploadedJsonlineFileList) {
 		this.uploadedJsonlineFileList = uploadedJsonlineFileList;
+	}
+
+	public boolean isSinceBeginningFlag() {
+		return sinceBeginningFlag;
+	}
+
+	public void setSinceBeginningFlag(boolean sinceBeginningFlag) {
+		this.sinceBeginningFlag = sinceBeginningFlag;
 	}
 
 

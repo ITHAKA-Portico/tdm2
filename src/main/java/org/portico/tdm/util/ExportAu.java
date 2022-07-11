@@ -137,15 +137,15 @@ public class ExportAu {
 		int this_year  = c.get(Calendar.YEAR);
 		
 		int last_month = this_month -1;
-		int year = this_year;
+		int last_year = this_year;
 		if( last_month == 0 ) {
 			last_month =12;
-			year = this_year-1;
+			last_year = this_year-1;
 		}
 		
 		//set default dates
-		loadDateSince = ( last_month < 10? "0" + last_month: "" + last_month ) + "/01/" + year;	//03/01/2020
-		loadDateTo = (this_month<10? "0" + this_month: "" + this_month ) + "/01/" + year;		//03/01/2021
+		loadDateSince = ( last_month < 10? "0" + last_month: "" + last_month ) + "/01/" + last_year;	//03/01/2020
+		loadDateTo = (this_month<10? "0" + this_month: "" + this_month ) + "/01/" + this_year;		//03/01/2021
 				
 		String contentdir = "newcontent_" + this_year + ( this_month<10? "0" + this_month: "" + this_month );		//default is for journals newcontent_202110
 		setNewContentFolder(contentdir);

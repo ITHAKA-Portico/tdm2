@@ -1131,12 +1131,6 @@ public class V2Book  extends TDMV2JsonObject {
 		else if ( providerID.equals("CAMBRIDGE")) {
 			processCAMBBookChapters(doc);
 		}
-		else if ( providerID.equals("PLUTOPRESS")) {
-			processPlutoBookChapters(doc);
-		}
-		else if ( providerID.equals("BERGHAHN")) {
-			processBerghahnBookChapters(doc);
-		}
 		else if ( providerID.equals("SAGE")) {
 			processSageBookChapters(doc);
 		}
@@ -1149,9 +1143,2520 @@ public class V2Book  extends TDMV2JsonObject {
 		else if ( providerID.equals("CSIRO")) {
 			processCSIROBookChapters(doc);
 		}
+		else if ( providerID.equals("PLUTOPRESS")) {
+			processPLUTOPRESSBookChapters(doc);
+		}
+		else if ( providerID.equals("PRINCETON")) {
+			processPRINCETONBookChapters(doc);
+		}
+		else if ( providerID.equals("RUSSELLSAGE")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("WHITEHORSE")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("SOCLIBYANSTUD")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("BARKHUIS")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("CAMBRIDGEPHILSOC")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("CFES")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("INSTAP")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("OXBOW")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("SPINKBOOKS")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("AERA")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else if ( providerID.equals("ATHENS")) {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		else {
+			processGeneralTypeBookChapters(doc, providerID);
+		}
+		
+	}
+
+	/**
+	 * pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/oxbow/pjb2mtr1x5t/data/pjb2mtscvj4.xml
+	 * @param doc
+	 * @param providerID
+	 * @throws Exception 
+	 */
+	private void processGeneralTypeBookChapters(Document doc, String providerID) throws Exception {
+
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processGeneralTypeBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processGeneralTypeBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processGeneralTypeBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processGeneralTypeBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processGeneralTypeBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processGeneralTypeBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processGeneralTypeBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processGeneralTypeBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processGeneralTypeBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for " + providerID + " book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processGeneralTypeBookChapters : " +  chapters.size() + " chapter titles have been retrieved for " + providerID + " book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processGeneralTypeBookChapters : 0 chapter have been retrieved for " + providerID + " book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+		
+		
+	}
+
+	/**
+	 *  INSTAP: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/oxbow/pjb2mtr1x5t/data/pjb2mtscvj4.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processOXBOWBookChapters(Document doc) throws Exception {
+
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processOXBOWBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processOXBOWBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processOXBOWBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processOXBOWBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processOXBOWBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processOXBOWBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processOXBOWBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processOXBOWBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processOXBOWBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for OXBOW book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processOXBOWBookChapters : " +  chapters.size() + " chapter titles have been retrieved for OXBOW book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processOXBOWBookChapters : 0 chapter have been retrieved for OXBOW book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+		
+	}
+
+	/**
+	 *  INSTAP: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/instap/pjb2d4vjxp4/data/pjb2d5291v5.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processINSTAPBookChapters(Document doc) throws Exception {
+
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processINSTAPBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processINSTAPBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processINSTAPBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processINSTAPBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processINSTAPBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processINSTAPBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processINSTAPBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processINSTAPBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processINSTAPBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for INSTAP book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processINSTAPBookChapters : " +  chapters.size() + " chapter titles have been retrieved for INSTAP book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processINSTAPBookChapters : 0 chapter have been retrieved for INSTAP book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+	}
+
+	/**
+	 *  CFES: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/cfes/pjb35w7h04k/data/pjb35w7hq4f.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processCFESBookChapters(Document doc) throws Exception {
+
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processCFESBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processCFESBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processCFESBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processCFESBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processCFESBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCFESBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCFESBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCFESBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCFESBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for CFES book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processCFESBookChapters : " +  chapters.size() + " chapter titles have been retrieved for CFES book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processCFESBookChapters : 0 chapter have been retrieved for CFES book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+	}
+
+	/**
+	 *  CAMBRIDGEPHILSOC: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/cambridgephilsoc/pjb2m1djn4c/data/pjb2m1dm833.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processCAMBRIDGEPHILSOCBookChapters(Document doc) throws Exception {
+
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processCAMBRIDGEPHILSOCBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processCAMBRIDGEPHILSOCBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processCAMBRIDGEPHILSOCBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for CAMBRIDGEPHILSOC book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processCAMBRIDGEPHILSOCBookChapters : " +  chapters.size() + " chapter titles have been retrieved for CAMBRIDGEPHILSOC book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processCAMBRIDGEPHILSOCBookChapters : 0 chapter have been retrieved for CAMBRIDGEPHILSOC book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+	}
+
+	/**
+	 *  BARKHUIS: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/barkhuis/pjb2rpnhmfv/data/pjb2rpnm05k.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processBARKHUISBookChapters(Document doc) throws Exception {
+		
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processBARKHUISBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processBARKHUISBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processBARKHUISBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processBARKHUISBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processBARKHUISBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processBARKHUISBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processBARKHUISBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processBARKHUISBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processBARKHUISBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for BARKHUIS book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processBARKHUISBookChapters : " +  chapters.size() + " chapter titles have been retrieved for BARKHUIS book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processBARKHUISBookChapters : 0 chapter have been retrieved for BARKHUIS book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+	}
+
+	/**
+	 *  SOCLIBYANSTUD: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/soclibyanstud/pjb1rf1xhwz/data/pjb1rf2qbvc.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processSOCLIBYANSTUDBookChapters(Document doc) throws Exception {
+		
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processSOCLIBYANSTUDBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processSOCLIBYANSTUDBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processSOCLIBYANSTUDBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processSOCLIBYANSTUDBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processSOCLIBYANSTUDBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processSOCLIBYANSTUDBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processSOCLIBYANSTUDBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processSOCLIBYANSTUDBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processSOCLIBYANSTUDBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for SOCLIBYANSTUD book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processSOCLIBYANSTUDBookChapters : " +  chapters.size() + " chapter titles have been retrieved for SOCLIBYANSTUD book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processSOCLIBYANSTUDBookChapters : 0 chapter have been retrieved for SOCLIBYANSTUD book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+	}
+
+	/**
+	 *  WHITEHORSE: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/whitehorse/pjb35w0t482/data/pjb35w0vcvj.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processWHITEHORSEBookChapters(Document doc) throws Exception {
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processWHITEHORSEBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processWHITEHORSEBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processWHITEHORSEBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processWHITEHORSEBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processWHITEHORSEBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processWHITEHORSEBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processWHITEHORSEBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processWHITEHORSEBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processWHITEHORSEBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for WHITEHORSE book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processWHITEHORSEBookChapters : " +  chapters.size() + " chapter titles have been retrieved for WHITEHORSE book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processWHITEHORSEBookChapters : 0 chapter have been retrieved for WHITEHORSE book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+	}
+
+	/**
+	 * RUSSELLSAGE: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202203/russellsage/phzq9mjk761/data/phzq9mjtv32.xml
+	 * @param doc
+	 * @throws Exception 
+	 */
+	private void processRUSSELLSAGEBookChapters(Document doc) throws Exception {
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processRUSSELLSAGEBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processRUSSELLSAGEBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processRUSSELLSAGEBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processRUSSELLSAGEBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processRUSSELLSAGEBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processRUSSELLSAGEBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processRUSSELLSAGEBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processRUSSELLSAGEBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processRUSSELLSAGEBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for RUSSELLSAGE book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processRUSSELLSAGEBookChapters : " +  chapters.size() + " chapter titles have been retrieved for RUSSELLSAGE book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processRUSSELLSAGEBookChapters : 0 chapter have been retrieved for RUSSELLSAGE book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+	}
+
+	/*
+	 * PRINCETON: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202202/princeton/pbd179crgh2/data/phz993pst88.xml
+	 * 
+	 */
+	private void processPRINCETONBookChapters(Document doc) throws Exception {
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processPRINCETONBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processPRINCETONBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  //ark:/27927/phz993pq98j
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processPRINCETONBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processPRINCETONBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processPRINCETONBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPRINCETONBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPRINCETONBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPRINCETONBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPRINCETONBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for PRINCETON book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processPRINCETONBookChapters : " +  chapters.size() + " chapter titles have been retrieved for PRINCETON book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processPRINCETONBookChapters : 0 chapter have been retrieved for PRINCETON book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
 	}
 
 	
+	/*
+	 * PLUTOPRESS: pdfs for chapters. Chapter metadata in /book/book-body
+	 * 	Do:
+	 * 	-> set hasPartTitle
+	 * 	-> Set pdfFiles
+	 *  -> set chapters
+	 *  
+	 * Sample: /Users/dxie/eclipse-workspace/tdm2/input/ebook/newcontent_202202/princeton/pbd179crgh2/data/phz993pst88.xml
+	 * 
+	 */
+	private void processPLUTOPRESSBookChapters(Document doc) throws Exception {
+		String providerID = getPublisherId();
+		String bookAuId = getAuid();
+		String bookCSName = getContentSetName();
+		
+		List<String> pdfs = new ArrayList<>();
+		List<String> chapterTitles = new ArrayList<>();
+		List<V2Chapter> chapters = new ArrayList<>();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/book/book-body/book-part[@book-part-type!='book-toc-page-order']", doc, XPathConstants.NODESET); 
+		
+
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			Element bookpart_elem = (Element) nodes.item(i);
+			
+			String title = null;
+			try {
+				title = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/title");
+			} catch (XPathExpressionException e2) {
+				logger.error( programName + "processPLUTOPRESSBookChapters: : Error getting title for book chapter" + providerID + " "  + bookAuId + " " + e2);
+				continue;
+			}
+			chapterTitles.add(title);
+			
+			String subTitle = null;
+			try {
+				subTitle = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/title-group/subtitle");
+			} catch (XPathExpressionException e2) {
+				
+			}
+			String seqStr = bookpart_elem.getAttribute("seq");
+			int seq = 0;
+			if ( seqStr != null && !seqStr.isEmpty()) {
+				seq = Integer.parseInt(seqStr);
+			}
+			else {
+				seq = i+1;
+			}
+			
+			String doi = null;
+			try {
+				doi = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/book-part-id[@book-part-id-type='doi']");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + "processPLUTOPRESSBookChapters: : Error getting DOI for book chapter" + providerID + " " + bookAuId + " " + e);
+			}
+			
+			String pdf_archive = null;
+			String fu_id = null; String su_id = null;
+			try {
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  //ark:/27927/phz993pq98j
+			} catch (XPathExpressionException e1) {
+				logger.error( programName + ":processPLUTOPRESSBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
+				continue;
+				
+			}
+			if ( fu_id != null ) {
+				try {
+					su_id = TDMUtil.findSuidByFuid( fu_id, bookAuId);			
+				} catch (Exception e) {
+					logger.error( programName + ":processPRINCETONBookChapters :findSuidByFuid for " + bookAuId + " " + e.getMessage());
+					continue;
+				}
+			}
+			else {
+				if ( doi != null && ! doi.isEmpty()) {
+					try {
+						su_id = TDMUtil.findSuidByDOI( doi.substring(doi.lastIndexOf("/")), bookAuId);	//doi 10.3366/j.ctt9qdrrf.1
+					} catch (Exception e) {
+						logger.error( programName + ":processPLUTOPRESSBookChapters :findSuidByDOI for " + bookAuId + " " + e);
+						continue;
+					}
+				}
+			}
+
+			if ( su_id != null && !su_id.isEmpty()) {
+				pdf_archive = su_id.replace("ark:/27927/", "") + ".pdf";	
+				pdfs.add(pdf_archive);
+			}
+
+			String fpage = null;
+			try {
+				fpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/fpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPLUTOPRESSBookChapters :Error getting fpage for book chapter " + bookAuId + " " + e);
+			}
+			String lpage = null;
+			try {
+				lpage = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/lpage");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPLUTOPRESSBookChapters :Error getting lpage for book chapter " + bookAuId + " " + e);
+			}
+			
+			String pageRange = null;
+			if ( fpage!= null && lpage != null ) {
+				pageRange = fpage + "-" + lpage;
+			}
+			else if ( fpage != null ) {
+				pageRange = fpage + "-";
+			}
+			
+			
+			//EUP no chapter page count
+			
+			String chapter_abstract = null;
+			try {
+				chapter_abstract = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/abstract");
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPLUTOPRESSBookChapters :Error getting chapter abstract for book chapter " + bookAuId + " " + e);
+			}
+			
+			List<String> lans = new ArrayList<>();
+			String lang = bookpart_elem.getAttribute("xml:lang");
+			if ( lang == null || lang.isEmpty()) {
+				//use book's language
+				lans = getLanguage();
+			}
+			else {
+				String lang3letter = TDMUtil.convertLan2ToLan3( lang );
+				lans.add(lang3letter);
+			}
+			List<String> creators = null;
+			try {
+				creators = getBookChapterCreators(bookpart_elem);
+			} catch (XPathExpressionException e) {
+				logger.error( programName + ":processPLUTOPRESSBookChapters :Error getting chapter creators for book chapter " + bookAuId + " " + e);
+			}
+			
+			if ( creators == null || creators.isEmpty()) {
+				//Use book's creator
+				creators = getCreator();
+			}
+		    
+		    V2Chapter chapter = new V2Chapter(su_id);
+		    chapter.setParentBook(this);
+		    chapter.setBookAuid(bookAuId);
+		    chapter.setInputDir( getInputDir());
+		    chapter.setOutputDir(getOutputDir());
+		    chapter.setContentSetName(bookCSName);
+		    chapter.setSubDir(getSubDir());
+		    chapter.setTitle(title);
+		    chapter.setSubTitle(subTitle);
+		    chapter.setSequence(seq);
+		    chapter.setPageStart(fpage);
+		    chapter.setPageEnd(lpage);
+		    chapter.setPagination(pageRange);
+		    chapter.setLanguage(lans);
+		    chapter.setCreator(creators);
+
+		    //copy book's isbns
+		    List<Identifier> ids = getBookISBNIds();
+		    if ( doi != null && !doi.isEmpty()) {	//if chapter has doi
+		    	Identifier id;
+		    	try {
+		    		id = new Identifier("doi", doi);
+		    		ids.add(id);
+		    		String url = "https://doi.org/" + doi;
+		    		chapter.setUrl(url);
+		    	} catch (Exception e) {
+
+		    	}
+		    }
+		    else if ( getDoi() != null ) {	//else use book's doi
+		    	doi = getDoi();
+		    }
+		    chapter.setDoi(doi);
+		    chapter.setIdentifiers(ids);
+		    
+		    List<String> outputformat = new ArrayList<>();
+		    outputformat.add("unigram");
+		    
+		    if ( isFullTextAvailable() ) {
+		    	chapter.setFullTextAvailable(true);
+		    	outputformat.add("fulltext");
+		    }
+		    else {
+		    	chapter.setFullTextAvailable(false);
+		    }
+		    chapter.setOutputFormat(outputformat);
+		    //chapter.setIsPartOf(bookAuId);
+		    String bookTitle = getTitle();
+		    chapter.setIsPartOf(bookTitle);			//use book title instead of book id
+		    chapter.setPublicationYear(getPublicationYear());
+		    chapter.setAbstractStr(chapter_abstract);
+		    chapter.setPublisher(getPublisher());
+		    chapter.setDatePublished(getDatePublished());
+		    chapter.setPublisherId(getPublisherId());
+		    chapter.setPdfFile(pdf_archive);
+		    
+		    chapters.add(chapter);
+		    
+		}
+		
+		setHasPartTitle(chapterTitles);
+		
+		if ( pdfs.isEmpty()) {
+			throw new Exception("No PDF file found for PRINCETON book " + bookAuId );
+		}
+		
+		setPdfFiles(pdfs);
+		setChapters(chapters);
+		
+		if ( ! chapters.isEmpty()) {
+			logger.info( programName + ":processPLUTOPRESSBookChapters : " +  chapters.size() + " chapter titles have been retrieved for PLUTOPRESS book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		else {
+			logger.info( programName + ":processPLUTOPRESSBookChapters : 0 chapter have been retrieved for PLUTOPRESS book " + bookAuId + " from " + getBitsXmlFileName() );
+		}
+		
+		
+	}
+
 	/**
 	 * CSIRO： 1 pdf for all chapters. No chapter metadata. Use bookmark to retrieve chapter info.
 	 * @param doc
@@ -1707,7 +4212,7 @@ public class V2Book  extends TDMV2JsonObject {
 			String pdf_archive = null;
 			String fu_id = null; String su_id = null;
 			try {
-				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf']/@*[name()='xlink:href']");  //ark:/27927/pbd16v8g9dv
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  //ark:/27927/pbd16v8g9dv
 			} catch (XPathExpressionException e1) {
 				logger.error( programName + ":processEUPBookChapters for " + bookAuId + ":Cannot get fu_id " + e1);
 				continue;
@@ -2875,7 +5380,7 @@ public class V2Book  extends TDMV2JsonObject {
 			String pdf_archive = null;
 			String fu_id = null; String su_id = null;
 			try {
-				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf']/@*[name()='xlink:href']");  //ark:/27927/pbf100chd9
+				fu_id = getSubtreeNodeValueByXPath( bookpart_elem, "book-part-meta/self-uri[@content-type='pdf' or @content-type='chapter-pdf' ]/@*[name()='xlink:href']");  //ark:/27927/pbf100chd9
 			} catch (XPathExpressionException e1) {
 				logger.error( programName + ":processEmeraldBookChapters for " + providerID + " " + bookAuId + ":Cannot get fu_id " + e1.getMessage());
 				continue;
@@ -3085,15 +5590,6 @@ public class V2Book  extends TDMV2JsonObject {
 	}
 
 
-	private void processBerghahnBookChapters(Document doc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void processPlutoBookChapters(Document doc) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	/*
 	 * RIA: pdfs for chapters. Chapter metadata in /book/book-body
